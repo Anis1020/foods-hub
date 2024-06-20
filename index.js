@@ -58,7 +58,6 @@ async function run() {
 
     // middleware
     const verifyToken = (req, res, next) => {
-      console.log("inside verify token", req.headers.authorization);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "unauthorize access" });
       }
@@ -135,9 +134,39 @@ async function run() {
       const result = await menuCollection.find().toArray();
       res.send(result);
     });
+    app.get("/menus/:id", async (req, res) => {
+      const id = req.params.id;
+      // const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.findOne({
+        _id: id,
+      });
+      console.log(result);
+      res.send(result);
+    });
     app.post("/menus", verifyToken, verifyAdmin, async (req, res) => {
       const menuItem = req.body;
       const result = await menuCollection.insertOne(menuItem);
+      res.send(result);
+    });
+    app.patch("/menus/:id", async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const query = { _id: id };
+      const updatedDoc = {
+        $set: {
+          name: item.name,
+          category: item.category,
+          recipe: item.recipe,
+          price: item.price,
+          Image: item.image,
+        },
+      };
+      const result = await menuCollection.updateOne(query, updatedDoc);
+    });
+    app.delete("/menus/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: id };
+      const result = await menuCollection.deleteOne(filter);
       res.send(result);
     });
     app.get("/reviews", async (req, res) => {
